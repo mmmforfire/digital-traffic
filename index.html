@@ -1,48 +1,27 @@
+<!DOCTYPE html>
+<html lang="en" >
 <head>
-  <title>Custom Digital Radio Log</title>
-  <style>
-    /* Add your custom styles here */
-    .error {
-      color: red;
-    }
-  </style>
-</head>
+  <meta charset="UTF-8">
+  <title>Digital Traffic Test v1.3</title>
+  
 
+</head>
 <body>
-  <h1>Digital Radio Log</h1>
-  <form id="logForm">
-    <label for="logEntry">Enter log:</label>
-    <input type="text" id="logEntry" name="logEntry" placeholder="Enter log" required>
-    <span id="errorLogEntry" class="error"></span>
-    <button type="submit">Submit</button>
-  </form>
-  <script>
-    document.getElementById('logForm').addEventListener('submit', function(e) {
-      e.preventDefault();
-      const logEntry = document.getElementById('logEntry').value;
-      const errorLogEntry = document.getElementById('errorLogEntry');
-      if (logEntry.trim() === '') {
-        errorLogEntry.textContent = 'Log entry is required.';
-      } else {
-        errorLogEntry.textContent = '';
-        // Add the logic to send form data to Google Sheets
-        fetch('https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec', {
-            method: 'POST',
-            mode: 'no-cors',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-              logEntry: logEntry
-            })
-          })
-          .then(response => {
-            console.log('Success:', response);
-          })
-          .catch(error => {
-            console.error('Error:', error);
-          });
-      }
-    });
-  </script>
+<!-- partial:index.partial.html -->
+<div class="container">
+<h1>Digital Radio Log</h1>
+<form 
+  method="POST" 
+  action="https://script.google.com/macros/s/AKfycbz1Tp-G2ifohD2yaQ262AZNIiCxin6X7aofrMaDTT5TbfK66ZU6Vy4Tq61Foas35ijh/exec"
+  id="digital-log">
+  <input name="email" type="email" placeholder="email" required>
+  <input name="name" type="text" placeholder="name" required>
+  <button type="submit">Send</button>
+</form>
+<iframe src="https://docs.google.com/spreadsheets/d/1m_JV0TtN_nMzPUszBWEgTrI3X3zVQ6k6uwnQywW9kio/edit?gid=0#gid=0"
+style="width:100%; height:500px;overflow:auto;"></iframe>
+<!-- partial -->
+  <script  src="js/script.js"></script>
+
 </body>
+</html>
