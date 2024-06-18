@@ -1,27 +1,102 @@
 <!DOCTYPE html>
-<html lang="en" >
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <title>Digital Traffic Test v1.3</title>
-  
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <script src="https://apis.google.com/js/api.js"></script>
+  <script type="text/javascript">
+    function loadClient() {
+      gapi.client.setApiKey('AIzaSyAMkP2DaB35F8pzENxYjuOJ6M6w_k6AyEc'); // Replace with your API key
+      return gapi.client.load('https://sheets.googleapis.com/$discovery/rest?version=v4')
+          .then(function() { 
+              console.log('GAPI client loaded for API');
+              fetchSheetData(); // Call fetchSheetData here to ensure it's called after the client is loaded
+          },
+          function(err) { 
+              console.error('Error loading GAPI client for API', err); 
+          });
+    }
 
+    function fetchSheetData() {
+      console.log('Fetching sheet data...');
+      return gapi.client.sheets.spreadsheets.values.get({
+        spreadsheetId: '1m_JV0TtN_nMzPUszBWEgTrI3X3zVQ6k6uwnQywW9kio', // Your spreadsheet ID
+        range: 'Sheet1!A1:Z100',
+      }).then(function(response) {
+        const range = response.result;
+        console.log(range);
+        if (range.values && range.values.length > 0) {
+          const table = document.getElementById('table_div');
+          let html = '<table border="1"><tr>';
+          range.values[0].forEach((header) => {
+            html += `<th>${header}</th>`;
+          });
+          html += '</tr>';
+
+          range.values.slice(1).forEach((row, rowIndex) => {
+            html += '<tr>';
+            row.forEach((cell, cellIndex) => {
+              html += `<td contenteditable="true" data-row="${rowIndex + 1}" data-col="${cellIndex}" onblur="updateCell(this)">${cell}</td>`;
+            });
+            html += '</tr>';
+          });
+          html += '</table>';
+          table.innerHTML = html;
+        } else {
+          console.log('No data found.');
+        }
+      }, function(response) {
+        console.error('Error: ' + response.result.error.message);
+      });
+    }
+
+    function updateCell(cell) {
+      const row = cell.getAttribute('data-row');
+      const col = cell.getAttribute('data-col');
+      const newValue = cell.textContent;
+
+      console.log(`Updating cell at row ${row}, col ${col} with value ${newValue}`);
+
+      const params = {
+        spreadsheetId: '1m_JV0TtN_nMzPUszBWEgTrI3X3zVQ6k6uwnQywW9kio', // Your spreadsheet ID
+        range: `Sheet1!${String.fromCharCode(65 + parseInt(col))}${parseInt(row) + 1}`, // Convert column index to letter
+        valueInputOption: 'USER_ENTERED',
+      };
+
+      const valueRangeBody = {
+        "range": `Sheet1!${String.fromCharCode(65 + parseInt(col))}${parseInt(row) + 1}`,
+        "majorDimension": "ROWS",
+        "values": [
+          [newValue]
+        ]
+      };
+
+      gapi.client.sheets.spreadsheets.values.update(params, valueRangeBody).then((response) => {
+        console.log(response);
+        console.log('Cell updated successfully');
+      }, (err) => {
+        console.error('Error updating cell:', err);
+      });
+    }
+
+    gapi.load('client', loadClient);
+
+    function refreshTable() {
+      fetchSheetData();
+    }
+  </script>
 </head>
-<body>
-<!-- partial:index.partial.html -->
-<div class="container">
-<h1>Digital Radio Log</h1>
-<form 
-  method="POST" 
-  action="https://script.google.com/macros/s/AKfycbz1Tp-G2ifohD2yaQ262AZNIiCxin6X7aofrMaDTT5TbfK66ZU6Vy4Tq61Foas35ijh/exec"
-  id="digital-log">
-  <input name="email" type="email" placeholder="email" required>
-  <input name="name" type="text" placeholder="name" required>
-  <button type="submit">Send</button>
-</form>
-<iframe src="https://docs.google.com/spreadsheets/d/1m_JV0TtN_nMzPUszBWEgTrI3X3zVQ6k6uwnQywW9kio/edit?gid=0#gid=0"
-style="width:100%; height:500px;overflow:auto;"></iframe>
-<!-- partial -->
-  <script  src="js/script.js"></script>
-
+<body onload="fetchSheetData()">
+  <div class="container">
+    <h1>Digital Radio Log</h1>
+    <form id="digital-log" onsubmit="submitForm(event)">
+      <input name="email" type="email" placeholder="email" required>
+      <input name="name" type="text" placeholder="name" required>
+      <button type="submit">Send</button>
+    </form>
+    <div id="table_div" style="width:100%; height:500px; border: 1px solid black;"></div>
+  </div>
+  <script src="js/script.js"></script> <!-- Ensure the path is correct -->
 </body>
 </html>
